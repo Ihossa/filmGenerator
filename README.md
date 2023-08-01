@@ -4,4 +4,4 @@ The test Vue project
 
 ## Deploy
 
-Deployed in https://lovely-sorbet-dc6cb7.netlify.app/
+Deployed in https://cosmic-florentine-b2c758.netlify.app/
