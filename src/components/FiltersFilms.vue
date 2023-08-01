@@ -85,7 +85,7 @@ const onApplyFilter = () => {
   z-index: 100;
 
   @include large {
-    width: 400px;
+    width: 320px;
     min-width: 320px;
     position: relative;
     background: $color-background-block;
