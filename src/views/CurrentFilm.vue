@@ -1,28 +1,33 @@
 <script setup>
-import { useStore } from 'vuex'
 import { onMounted } from 'vue'
 import CardFilmDetail from '../components/CardFilmDetail.vue'
 import NavigationBackIcon from '../shared/icons/NavigationBackIcon.vue'
 import LoadingIcon from "../shared/icons/LoadingIcon.vue";
+import {filmStore} from "../store";
+import {storeToRefs} from 'pinia'
+const store = filmStore()
 
-const store = useStore()
+const { films } = storeToRefs(store)
 
-onMounted(() => {
-  if (store.state.films.length === 0) {
-    store.dispatch('fetchFilms')
+const {fetchFilms} = store
+
+onMounted(async () => {
+  if (films.value.length === 0) {
+    await fetchFilms()
   }
 })
+
 </script>
 
 <template>
-  <div v-if="store.state.films.length !== 0" class="container">
+  <div v-if="films.length !== 0" class="container">
     <router-link class="navLink" to="/">
       <navigation-back-icon class="icon" />
       Назад
     </router-link>
     <card-film-detail />
   </div>
-  <loading-icon v-if="store.state.films.length === 0" />
+  <loading-icon v-if="films.length === 0" />
 </template>
 
 <style scoped lang="scss">

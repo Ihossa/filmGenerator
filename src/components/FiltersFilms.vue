@@ -1,32 +1,23 @@
 <script setup>
-import { useStore } from 'vuex'
 import ButtonMain from '../shared/ButtonMain.vue'
 import BtnMenu from '../shared/BtnMenu.vue'
 import { ref } from 'vue'
-
-const store = useStore()
+import {filmStore, FILTER_RATING, FILTER_GENRE, FILTER_YEAR} from "@/store";
+import {storeToRefs} from "pinia";
+const store = filmStore()
 
 let isOpenMenu = ref(false)
 
-const chooseGenre = (value) => {
-  store.commit('setFilter', { type: 'genre_type', value: value })
-}
-
-const chooseYear = (value) => {
-  store.commit('setFilter', { type: 'year', value: value })
-}
-
-const chooseRate = (value) => {
-  store.commit('setFilter', { type: 'rating_score', value: value })
-}
+const {setFilter, applyFilter} = store
+const { filters, optionsForGenre, optionsForYear, appliedFilter } = storeToRefs(store)
 
 const changeVisible = () => {
   isOpenMenu.value = !isOpenMenu.value
 }
 
-const applyFilter = () => {
+const onApplyFilter = () => {
   isOpenMenu.value = false
-  store.dispatch('applyFilter')
+  applyFilter()
 }
 
 </script>
@@ -38,15 +29,15 @@ const applyFilter = () => {
       <el-form-item class="label" label="Жанр">
         <el-select
           class="select"
-          @update:modelValue="chooseGenre"
-          :model-value="store.state.filters.genre_type"
+          @update:modelValue="(value) => {setFilter({ type: FILTER_GENRE, value: value }) }"
+          :model-value="filters[FILTER_GENRE]"
           placeholder="Виберіть жанр"
           clearable
         >
           <el-option
             text-color="green"
             class="item-select"
-            v-for="genre in store.state.optionsForGenre"
+            v-for="genre in optionsForGenre.value"
             :key="genre"
             :label="genre.charAt(0).toUpperCase() + genre.slice(1)"
             :value="genre"
@@ -56,13 +47,13 @@ const applyFilter = () => {
       <el-form-item class="label" label="Рік випуску">
         <el-select
           class="select"
-          @update:modelValue="chooseYear"
-          :model-value="store.state.filters.year"
+          @update:modelValue="(value) => {setFilter({ type: FILTER_YEAR, value: value })}"
+          :model-value="filters[FILTER_YEAR]"
           placeholder="Виберіть рік випуску"
           clearable
         >
           <el-option
-            v-for="year in store.state.optionsForYear"
+            v-for="year in optionsForYear.value"
             :key="year"
             :label="year"
             :value="year"
@@ -71,12 +62,12 @@ const applyFilter = () => {
         </el-select>
       </el-form-item>
       <el-form-item class="label" label="Рейтинг">
-        <el-input :model-value="store.state.filters.rating_score" @input="chooseRate" />
+        <el-input :model-value="filters[FILTER_RATING]" @input="(value) => {setFilter({ type: FILTER_RATING, value: value })}" />
       </el-form-item>
       <button-main
-        :disable="!store.getters.isChangedFilters"
+        :disable="JSON.stringify(filters) === JSON.stringify(appliedFilter)"
         label="Застосувати фільтр"
-        @onClick="applyFilter"
+        @onClick="onApplyFilter"
       />
     </el-form>
   </div>

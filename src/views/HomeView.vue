@@ -1,20 +1,22 @@
 <script setup>
-import { useStore } from 'vuex'
 import { onMounted } from 'vue'
-import FiltersFilms from '../components/FiltersFilms.vue'
-import MovieList from '../components/MovieList.vue'
-import {defaultFilter} from "../store";
+import {defaultFilter, filmStore} from "../store";
+import {storeToRefs} from 'pinia'
+const store = filmStore()
 
-const store = useStore()
+const { filters } = storeToRefs(store)
+const {applyFilter, fetchFilms} = store
 
-onMounted(() => {
-  if(JSON.stringify(store.state.filters) !== JSON.stringify(defaultFilter)){
-    store.dispatch('applyFilter')
+onMounted(async () => {
+  if(JSON.stringify(filters.value) !== JSON.stringify(defaultFilter)){
+    await applyFilter()
   } else {
-    store.dispatch('fetchFilms')
+    await fetchFilms()
   }
 })
+
 </script>
+
 
 <template>
   <div class="container">

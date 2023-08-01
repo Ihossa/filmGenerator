@@ -1,102 +1,98 @@
-import { createStore } from 'vuex'
 import { parseForFilter } from '../helpers/parseForFilter'
+import { defineStore } from 'pinia'
+import {reactive, ref} from 'vue'
 
+export const FILTER_GENRE = 'genre_type';
+export const FILTER_YEAR = 'year';
+export const FILTER_RATING = 'rating_score';
 export const defaultFilter = {
-  genre_type: '',
-  year: '',
-  rating_score: ''
+  [FILTER_GENRE]: '',
+  [FILTER_YEAR]: '',
+  [FILTER_RATING]: ''
 }
 
-export const store = createStore({
-  state() {
-    return {
-      films: [],
-      filters: {...defaultFilter},
-      appliedFilter: {...defaultFilter},
-      optionsForGenre: [],
-      optionsForYear: [],
-      isLoading: false
-    }
-  },
+export const filmStore = defineStore('filmStore', () =>{
 
-  getters: {
-    isChangedFilters(state) {
-      return JSON.stringify(state.filters) !== JSON.stringify(state.appliedFilter)
-    }
-  },
+  const films = ref([])
+  const filters = reactive({
+    [FILTER_GENRE]: ref(''),
+    [FILTER_YEAR]: ref(''),
+    [FILTER_RATING]: ref('')
+  })
+  const appliedFilter = reactive({...filters})
+  const optionsForGenre = reactive([])
+  const optionsForYear = reactive([])
+  const isLoading = ref(false)
 
-  mutations: {
-    setFilter(state, payload) {
-      state.filters[payload.type] = payload.value
-    },
+  const setFilter = (filter) => {
+    filters[filter.type] = filter.value
+  }
 
-    setOptionsForGenre(state, payload) {
-      state.optionsForGenre = payload
-    },
+  const setOptionsForGenre = (optionsForGenreProps) => {
+    optionsForGenre.value = optionsForGenreProps
+  }
 
-    setOptionsForYear(state, payload) {
-      state.optionsForYear = payload
-    },
+  const setOptionsForYear = (optionsForYearProps) => {
+    optionsForYear.value = optionsForYearProps
+  }
 
-    setFilms(state, films) {
-      state.films = films
-    },
+  const setFilms = (filmList) => {
+    films.value = filmList
+  }
 
-    setAppliedFilter(state) {
-      state.appliedFilter = { ...state.filters }
-    },
+  const setAppliedFilter = () => {
+    Object.keys(appliedFilter).forEach(keyFilter => {
+      appliedFilter[keyFilter] = filters[keyFilter]
+    })
+  }
 
-    setLoading(state, payload) {
-      state.isLoading = payload
-    }
-  },
+  const setLoading = (isLoadingProps) => {
+    isLoading.value = Boolean(isLoadingProps)
+  }
 
-  actions: {
-    fetchFilms({ commit }) {
-      commit('setLoading', true)
+  const fetchFilms = () => {
+      setLoading(true)
       fetch('/movies_list.json')
         .then((data) =>
           data.json().then((data) => {
-            commit('setFilms', data)
+            setFilms(data)
             let { listGenre, listYear } = parseForFilter(data)
-            commit('setOptionsForGenre', listGenre)
-            commit('setOptionsForYear', Array.from(listYear.values()).sort((a, b) => b - a))
+            setOptionsForGenre(listGenre)
+            setOptionsForYear( Array.from(listYear.values()).sort((a, b) => b - a))
           })
         )
         .catch((err) => {
           console.error(err)
         })
         .finally(() => {
-          commit('setLoading', false)
+          setLoading(false)
         })
-    },
+    }
 
-    async applyFilter({ state, commit }) {
-      commit('setLoading', true)
+  const applyFilter = async() => {
+    setLoading(true)
 
-      try {
-        let data = await fetch('/movies_list.json').then((data) => {
-          return data.json()
-        })
+    try {
+      let data = await fetch('/movies_list.json').then((data) => {
+        return data.json()
+      })
 
-        Object.keys(state.filters).forEach((filterItemKey) => {
-          if (
-            state.filters[filterItemKey]
-          ) {
+      Object.keys(filters).forEach((filterItemKey) => {
+        if (filters[filterItemKey]) {
             data = data.filter((filterItem) => {
-              return String(filterItem[filterItemKey]) === String(state.filters[filterItemKey])
+              return String(filterItem[filterItemKey]) === String(filters[filterItemKey])
             })
           }
         })
 
-        commit('setFilms', data)
-        commit('setAppliedFilter')
+        setFilms(data)
+        setAppliedFilter()
       } catch (err){
         console.error(err)
       } finally {
-        commit('setLoading', false)
+        setLoading(false)
       }
-
     }
-  }
+
+  return {films, filters, appliedFilter, optionsForGenre, optionsForYear, isLoading, setFilter, fetchFilms, applyFilter }
 })

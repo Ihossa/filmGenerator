@@ -1,11 +1,15 @@
 <script setup>
-import { useStore } from 'vuex'
 import { useRoute } from 'vue-router/dist/vue-router'
+import {filmStore} from "@/store";
+import {storeToRefs} from "pinia";
+const store = filmStore()
 
-const store = useStore()
+const { films } = storeToRefs(store)
+
 const route = useRoute()
 
-const film = store.state.films.find((film) => String(film.id) === String(route.params.id))
+const film = films.value.find((film) => String(film.id) === String(route.params.id))
+
 </script>
 
 <template>

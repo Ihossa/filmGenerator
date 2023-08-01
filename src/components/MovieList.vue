@@ -1,19 +1,22 @@
 <script setup>
-import { useStore } from 'vuex'
 import NothingFound from '../shared/NothingFound.vue'
 import CardItemFilm from './CardItemFilm.vue'
 import LoadingIcon from "../shared/icons/LoadingIcon.vue";
+import {filmStore} from "@/store";
+import {storeToRefs} from "pinia";
 
-const store = useStore()
+const store = filmStore()
+
+const { films, isLoading } = storeToRefs(store)
 
 </script>
 
 <template>
-  <NothingFound v-show="!store.state.films.length && !store.state.isLoading" />
-  <div v-show="!!store.state.films.length && !store.state.isLoading" class="container">
-    <card-item-film v-for="film in store.state.films" :key="film" :film="film" />
+  <NothingFound v-show="!films.length && !isLoading" />
+  <div v-show="!!films?.length && !isLoading" class="container">
+    <card-item-film v-for="film in films" :key="film" :film="film" />
   </div>
-  <loading-icon v-show="store.state.isLoading" />
+  <loading-icon v-show="isLoading" />
 </template>
 
 <style scoped lang="scss">
